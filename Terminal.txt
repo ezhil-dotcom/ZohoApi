@@ -1,0 +1,9 @@
+ //RUN BACKEND
+ .\venv\Scripts\Activate.ps1
+uvicorn main:app --port 5022 --reload
+
+
+Run Frontend
+
+# Terminal 2 (React project folder)
+npm run dev
