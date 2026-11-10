@@ -1,9 +1,8 @@
- //RUN BACKEND
- .\venv\Scripts\Activate.ps1
-uvicorn main:app --port 5022 --reload
-
-
-Run Frontend
+ //RUN BACKENDś
+ cd Backend
+.\venv\Scripts\Activate.ps1
+uvicorn main:app --port 5022 --reload   
 
 # Terminal 2 (React project folder)
+cd react-temp
 npm run dev

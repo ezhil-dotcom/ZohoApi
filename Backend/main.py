@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from zoho_auth import generate_access_token
 from zoho_analytics import get_organizations, get_workspaces, get_views,get_view_data
+from sql_loader import push_rows
+import re
 
 load_dotenv()
 app = FastAPI()
@@ -71,5 +73,35 @@ def api_view_data(org_id: str, workspace_id: str, view_id: str):
         if not isinstance(rows, list):
             return result  # unexpected shape, send it as is
         return {"data": {"rows": rows[:200], "total": len(rows)}}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/zoho/orgs/{org_id}/workspaces/{workspace_id}/views/{view_id}/push-to-sql")
+def api_push_to_sql(org_id: str, workspace_id: str, view_id: str, table_name: str, full_reload: bool = False):
+    try:
+        if not re.fullmatch(r"[A-Za-z0-9_]+", table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        result = get_view_data(org_id, workspace_id, view_id)
+        rows = result.get("data", [])
+        if not isinstance(rows, list):
+            raise Exception(f"Unexpected data shape: {type(rows)}")
+
+        # ---- the code you asked about starts here ----
+        if full_reload:
+            info = push_rows(table_name, rows, replace=True)
+            return {"message": f"Full reload: {info['inserted']} rows inserted into {table_name}"}
+
+        info = push_rows(table_name, rows)   # replace=False: add only new IDs
+        return {
+            "message": (
+                f"Received {info['received']} rows from Zoho: "
+                f"{info['inserted']} new rows added, {info['skipped']} already existed"
+            )
+        }
+        # ---- ends here ----
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

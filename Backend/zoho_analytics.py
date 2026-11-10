@@ -74,21 +74,21 @@ def get_views(org_id, workspace_id):
     )
 
     result = response.json()
-    print("Views status:", response.status_code)
+    # print("Views status:", response.status_code)
 
     if response.status_code != 200:
         raise Exception(f"{response.status_code}: {result}")
 
-    for v in result.get("data", {}).get("views", []):
-        if v.get("viewType") == "QueryTable":
-            print("View:", v.get("viewName"), "| ID:", v.get("viewId"), "| Type:", v.get("viewType"))
+    # for v in result.get("data", {}).get("views", []):
+    #     if v.get("viewType") == "QueryTable":
+    #         print("View:", v.get("viewName"), "| ID:", v.get("viewId"), "| Type:", v.get("viewType"))
         
     return result
 
 import json  # add to the imports at the top of the file
 
 
-def get_view_data(org_id, workspace_id, view_id, max_wait=120):
+def get_view_data(org_id, workspace_id, view_id, max_wait=300):
     headers = {
         "Authorization": f"Zoho-oauthtoken {generate_access_token()}",
         "ZANALYTICS-ORGID": org_id,
